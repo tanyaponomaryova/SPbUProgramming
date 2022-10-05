@@ -1,7 +1,8 @@
 #include <stdio.h>
- int main()
- {
-    int counterOfSums[28] = {0};
+#define arrayOfContersSize 28
+int main()
+{
+    int counterOfSums[arrayOfContersSize] = {0};
     for (int i = 0; i < 10; i++)
     {
         for (int j = 0; j < 10; j++)
@@ -13,9 +14,10 @@
         }
     }
     int answer = 0;
-    for (int i = 0; i < 28; i++)
+    for (int i = 0; i < arrayOfContersSize; i++)
     {
         answer += counterOfSums[i] * counterOfSums[i];
     }
     printf("Amount of lucky tickets is %d.", answer);
- }
+    return 0;
+}

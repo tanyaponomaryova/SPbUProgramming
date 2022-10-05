@@ -11,7 +11,17 @@ int isPrimeNumber(int x)
 int main()
 {
     int n;
-    printf("Enter n: ");
+    printf("Enter n to get prime numbers : ");
+    int lengths = 0;
+    int scanned = scanf("%d", &lengths);
+    while (scanned == 0 || lengths <= 0)
+    {
+        scanf("%*[^\n]");
+        printf("You didn't enter a correct number, try again: ");
+        scanned = scanf("%d", &lengths);
+    }
+
+
     scanf("%d", &n);
     if (n > 1)
     {

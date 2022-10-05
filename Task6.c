@@ -1,16 +1,47 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 int main()
 {
-    char s[1000];
-    char s1[1000];
-    int counter = 0;
-    printf("Enter S (no more than 1000 symbols): ");
+    printf("This program counts number of occurrences of substring S1 in string S. \n");
+
+    printf("Enter length of S (natural number): ");
+    int lengths = 0;
+    int scanned = scanf("%d", &lengths);
+    while (scanned == 0 || lengths <= 0)
+    {
+        scanf("%*[^\n]");
+        printf("You didn't enter a correct number, try again: ");
+        scanned = scanf("%d", &lengths);
+    }
+    char* s = calloc(lengths, sizeof(char));
+    if (s == NULL)
+    {
+        printf("Error allocating memory for string");
+        return -1;
+    }
+    printf("Enter S: ");
     scanf("%s", s);
-    printf("Enter S1 (no more than 1000 symbols): ");
+
+    printf("Enter length of S1 (natural number): ");
+    int lengths1 = 0;
+    scanned = scanf("%d", &lengths1);
+    while (scanned == 0 || lengths1 <= 0)
+    {
+        scanf("%*[^\n]");
+        printf("You didn't enter a correct number, try again: ");
+        scanned = scanf("%d", &lengths1);
+    }
+    char* s1 = calloc(lengths1, sizeof(char));
+    if (s1 == NULL)
+    {
+        printf("Error allocating memory for string");
+        return -1;
+    }
+    printf("Enter S1: ");
     scanf("%s", s1);
-    int lengths = strlen(s);
-    int lengths1 = strlen(s1);
+
+    int counter = 0;
     for (int i = 0; i < lengths - lengths1 + 1; i++)
     {
         for (int j = 0; j < lengths1; j++)
