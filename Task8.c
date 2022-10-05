@@ -2,20 +2,26 @@
 
 int main()
 {   
-    int counterOfElements = 0;
-    int array[1000] = {0};
+    printf("This program counts number of zero elements in array. \n");
+    int numberOfElements = 0;
     int counterOfZeros = 0;
-    printf("How many numbers will you enter? ");
-    scanf("%d", &counterOfElements);
-    printf("Enter numbers into array: ");
-    for (int i = 0; i < 1000; i++)
-        array[i] = 1;
-    for (int i = 0; i < counterOfElements; i++)
-        scanf("%d", &array[i]);
-    for (int i = 0; i < counterOfElements; i++)
+    printf("How many elements will you enter into array? ");
+    int scanned = scanf("%d", &numberOfElements);
+    while (scanned == 0 || numberOfElements <= 0)
     {
-        if (array[i] == 0)
+        scanf("%*[^\n]");
+        printf("You didn't enter a correct number, try again: ");
+        scanned = scanf("%d", &numberOfElements);
+    }
+    printf("Enter array: ");
+    for (int i = 0; i < numberOfElements; i++)
+    {
+        int element = 1;
+        scanf("%d", &element);
+        if (element == 0)
+        {
             counterOfZeros++;
+        }
     }
     printf("Number of zero elements: %d", counterOfZeros);
 }
