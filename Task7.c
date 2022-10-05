@@ -1,36 +1,50 @@
 #include <stdio.h>
-int isPrimeNumber(int x)
-{
-    for (int i = 2; i*i <= x; i++)
-    {
-        if (x % i == 0)
-            return 0;
-    }
-    return 1;
-}
+#include <stdlib.h>
+
 int main()
 {
-    int n;
-    printf("Enter n to get prime numbers : ");
-    int lengths = 0;
-    int scanned = scanf("%d", &lengths);
-    while (scanned == 0 || lengths <= 0)
+    printf("Enter n to get prime numbers <= n: ");
+    int n = 0;
+    int scanned = scanf("%d", &n);
+    while (scanned == 0)
     {
         scanf("%*[^\n]");
-        printf("You didn't enter a correct number, try again: ");
-        scanned = scanf("%d", &lengths);
+        printf("You didn't enter a number, try again: ");
+        scanned = scanf("%d", &n);
     }
-
-
-    scanf("%d", &n);
     if (n > 1)
     {
-        for (int i = 2; i <= n; i++)
+        int* sieve = calloc(n + 1, sizeof(int));
+        if (sieve == NULL)
         {
-            if (isPrimeNumber(i))
-                printf("%d ", i);
+            printf("Error allocating memory for sieve");
+            return -1;
         }
+        sieve[0] = 1;
+        sieve[1] = 1;
+        for (int i = 2; i * i <= n; i++)
+        {
+            if (sieve[i] == 0)
+            {
+                for (int j = i * i; j <= n; j += i)
+                {
+                    sieve[j] = 1;
+                }
+            }
+        }
+        printf("Prime numbers <= n: ");
+        for (int k = 0; k <= n; k++)
+        {
+            if (sieve[k] == 0)
+            {
+                printf("%d ", k);
+            }
+        }
+        free(sieve);
     }
     else
-        printf("n must be > 1.");
+    {
+        printf("There is no prime numbers <= %d.", n);
+    }
+    return 0;
 }
