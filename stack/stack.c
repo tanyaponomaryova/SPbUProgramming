@@ -42,7 +42,7 @@ int top(Stack* stackPtr, int* value)
 {
     if (stackPtr == NULL || stackPtr->lastElementPtr == NULL || value == NULL)
     {
-        return -1;
+        return -2;
     }
     *value = stackPtr->lastElementPtr->value;
     return 0;
@@ -52,7 +52,7 @@ int pop(Stack* stackPtr, int* value)
 {
     if (stackPtr == NULL || stackPtr->lastElementPtr == NULL || value == NULL)
     {
-        return -1;
+        return -2;
     }
     *value = stackPtr->lastElementPtr->value;
     StackElement* PtrTolastElementToFree = stackPtr->lastElementPtr;
@@ -65,7 +65,7 @@ int printStack(Stack* stackPtr)
 {
     if (stackPtr == NULL)
     {
-        return -1;
+        return -2;
     }
     StackElement* currentElementPtr = stackPtr->lastElementPtr;
     if (currentElementPtr == NULL)
@@ -86,7 +86,7 @@ int lengthOfStack(Stack* stackPtr, int* lengthPtr)
 {
     if (stackPtr == NULL || lengthPtr == NULL)
     {
-        return -1;
+        return -2;
     }
     *lengthPtr = 0;
     StackElement* currentElementPtr = stackPtr->lastElementPtr;
@@ -113,6 +113,7 @@ void freeStack(Stack* stackPtr)
     }
     free(stackPtr);
 }
+
 bool isEmptyOrNull(Stack* stackPtr)
 {
     return stackPtr == NULL || stackPtr->lastElementPtr == NULL;

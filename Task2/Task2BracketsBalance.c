@@ -2,6 +2,13 @@
 #include <stdbool.h>
 #include "../stack/stack.h"
 
+typedef enum Error
+{
+    MemoryAllocationError,
+    Balanced,
+    Unbalanced
+} Error;
+
 bool isMatchingBrackets(char openingBracket, char closingBracket)
 {
     if (openingBracket == '(' && closingBracket == ')')
@@ -13,9 +20,14 @@ bool isMatchingBrackets(char openingBracket, char closingBracket)
     return false;
 }
 
-bool isStringBalanced()
+Error isStringBalanced()
 {
-    Stack* stackPtr = createStack();
+    Stack* stackPtr = NULL;
+    createStack(&stackPtr);
+    if (stackPtr == NULL)
+    {
+        return MemoryAllocationError;
+    }
     printf("Enter string to check brackets balance: ");
     for (char scannedSymbol = getchar(); scannedSymbol != '\n'; scannedSymbol = getchar())
     {
@@ -24,43 +36,58 @@ bool isStringBalanced()
             case '(':
             case '{':
             case '[':
-                push(stackPtr, scannedSymbol);
+            {
+                int errorCode = push(stackPtr, scannedSymbol);
+                if (errorCode == -1)
+                {
+                    freeStack(stackPtr);
+                    return MemoryAllocationError;
+                }
                 break;
+            }
             case ')':
             case '}':
             case ']':
             {
-                if (isEmpty(stackPtr)) // если пустой то точно нет пары для закрывающей скобки
+                if (isEmptyOrNull(stackPtr)) // если пустой, то точно нет пары для закрывающей скобки
                 {
-                    return false;
+                    freeStack(stackPtr);
+                    return Unbalanced;
                 }
-
-                int topOfStack; // тип int потому что pop принимает на вход int*
+                int topOfStack;
                 pop(stackPtr, &topOfStack);
-
-                if (!isMatchingBrackets(topOfStack, scannedSymbol))
+                if (!isMatchingBrackets((char)topOfStack, scannedSymbol))
                 {
-                    return false;
+                    freeStack(stackPtr);
+                    return Unbalanced;
                 }
                 break;
-            }
+            } // если любой другой символ, то его просто игнорируем
         }
+    } // все символы обработали и до сих пор не вернули результат
+    if (isEmptyOrNull(stackPtr)) // если стек пустой - баланс, если в нём остались ещё какие-то скобки - не баланс
+    {
+        freeStack(stackPtr);
+        return Balanced;
     }
-    // все символы обработали и до сих пор не вернули результат
-    bool isBalanced = isEmpty(stackPtr); //если пустой - значит баланс
     freeStack(stackPtr);
-    return isBalanced; //ВЕЗДЕ ДОБАВИТЬ ФРИ СТЕК
+    return Unbalanced;
 }
 
 int main()
 {
-    if (isStringBalanced())
+    Error result = isStringBalanced();
+    if (result == Balanced)
     {
-        printf("Entered string is balanced :) \n");
+        printf("Entered string is balanced :)");
+    }
+    else if (result == Unbalanced)
+    {
+        printf("Entered string is unbalanced :(");
     }
     else
     {
-        printf("Entered string is unbalanced :( \n");
+        printf("Memory allocation error :0");
     }
     return 0;
 }
