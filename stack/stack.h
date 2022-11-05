@@ -1,21 +1,35 @@
 #pragma once
 
-typedef struct Stack Stack; // структура которая содержит только адрес последнего элемента стэка
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
-Stack* createStack();
+// Структура стек
+typedef struct Stack Stack;
 
-int push(Stack* stackAdress, int value); // добавляет элемент в стек
+// Создание стека, функция принимает указатель на указаетль на стек
+int createStack(Stack** stackPtrPtr);
 
-int isEmpty(Stack* stackAdress);
+// Добавление нового элемента на вершину стека, функция принимает указатель на стек и значение элемента
+int push(Stack* stackPtr, int value);
 
-int top(Stack* stackAdress, int* value); // принимает адрес стека и адрес переменной куда положить значение с верхушки стека
+//Показывает, какой элемент на вершине стека, функция принимает адрес стека и адрес переменной, куда положить значение с вершины
+int top(Stack* stackPtr, int* value);
 
-int pop(Stack* stackAdress, int* value); // кладет в даваемый адрес значение последнего элемета стека а из самого стека удаляет последний элемент
+// Удаляет элемент с вершины стека и кладёт его значение в переменную value, функция принимает указатель на стек и адрес value
+int pop(Stack* stackPtr, int* value);
 
-int printStack(Stack* stackAdress);
+// Распечатать стек, функция принимает адрес стека
+int printStack(Stack* stackPtr);
 
-int lengthOfStack(Stack* stackAdress, int* lengthAdress);
+// Длина стека, функция принимает адрес стека и адрес переменной, куда положить длину
+int lengthOfStack(Stack* stackPtr, int* lengthPtr);
 
-int freeStack(Stack* stackAdress);
+// Удаление стека, функция принимает адрес стека
+void freeStack(Stack* stackPtr);
+
+// Проверка стек пустой или нул, функция принимает указатель на стек
+bool isEmptyOrNull(Stack* stackPtr);
+
 
 

@@ -1,120 +1,119 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "../stack/stack.h"
 
 typedef struct StackElement
 {
     int value;
-    struct StackElement* nextElementAdress; // адрес на следующую структуру StackElement
+    struct StackElement* nextElementPtr;
 } StackElement;
 
-typedef struct Stack // структура которая содержит только адрес последнего элемента стэка
+typedef struct Stack
 {
-    StackElement* lastElementAdress;
+    StackElement* lastElementPtr;
 } Stack;
 
-Stack* createStack() // возвращает адрес структуры стек в которой пока только NULL адрес на последний элемент
+int createStack(Stack** stackPtrPtr)
 {
-    return (Stack*)calloc(1, sizeof(Stack));
-}
-int push(Stack* stackAdress, int value) // добавляет элемент в стек
-{
-    if (stackAdress == NULL)
+    *stackPtrPtr = calloc(1, sizeof(Stack));
+    if (*stackPtrPtr == NULL)
     {
         return -1;
     }
-    StackElement* newElementAdress = calloc(1, sizeof(StackElement)); // адрес на новый элемент стека
-    if (newElementAdress == NULL) // не удалось аллоцировать память для нового элемента
+    return 0;
+}
+
+int push(Stack* stackPtr, int value)
+{
+    if (stackPtr == NULL)
     {
         return -2;
     }
-    newElementAdress->nextElementAdress = stackAdress->lastElementAdress;
-    newElementAdress->value = value;
-    stackAdress->lastElementAdress = newElementAdress;
-    return 0;
-}
-
-int isEmpty(Stack* stackAdress)
-{
-    if (stackAdress == NULL)
+    StackElement* newElementPtr = calloc(1, sizeof(StackElement));
+    if (newElementPtr == NULL)
     {
         return -1;
     }
-    return (stackAdress->lastElementAdress == NULL); // если в стеке последний элемент ни на что не указывает значит он пуст - вернётся число отличное от нуля, иначе 0
-}
-
-int top(Stack* stackAdress, int* value) //принимает адрес стека и адрес переменной куда положить значение с верхушки стека
-{
-    if (stackAdress == NULL || isEmpty(stackAdress) || value == NULL)
-    {
-        return -1;
-    }
-    *value = stackAdress->lastElementAdress->value;
-
+    newElementPtr->nextElementPtr = stackPtr->lastElementPtr;
+    newElementPtr->value = value;
+    stackPtr->lastElementPtr = newElementPtr;
     return 0;
 }
 
-int pop(Stack* stackAdress, int* value) //кладет в даваемый адрес значение последнего элемета стека а из самого стека удаляет последний элемент
+int top(Stack* stackPtr, int* value)
 {
-    if (stackAdress == NULL || isEmpty(stackAdress) || value == NULL)
+    if (stackPtr == NULL || stackPtr->lastElementPtr == NULL || value == NULL)
     {
         return -1;
     }
-    *value = stackAdress->lastElementAdress->value;
-    StackElement* AdressOflastElementToFree = stackAdress->lastElementAdress;
-    stackAdress->lastElementAdress = stackAdress->lastElementAdress->nextElementAdress;
-
-    free(AdressOflastElementToFree);
-
+    *value = stackPtr->lastElementPtr->value;
     return 0;
 }
 
-int printStack(Stack* stackAdress)
+int pop(Stack* stackPtr, int* value)
 {
-    if (stackAdress == NULL)
+    if (stackPtr == NULL || stackPtr->lastElementPtr == NULL || value == NULL)
     {
         return -1;
+    }
+    *value = stackPtr->lastElementPtr->value;
+    StackElement* PtrTolastElementToFree = stackPtr->lastElementPtr;
+    stackPtr->lastElementPtr = stackPtr->lastElementPtr->nextElementPtr;
+    free(PtrTolastElementToFree);
+    return 0;
+}
+
+int printStack(Stack* stackPtr)
+{
+    if (stackPtr == NULL)
+    {
+        return -1;
+    }
+    StackElement* currentElementPtr = stackPtr->lastElementPtr;
+    if (currentElementPtr == NULL)
+    {
+        printf("Stack is empty. \n");
     }
     printf("Stack: ");
-    StackElement* currentElementAdress = stackAdress->lastElementAdress;
-    while (currentElementAdress != NULL)
+    while (currentElementPtr != NULL)
     {
-        printf("%d ", currentElementAdress->value);
-        currentElementAdress = currentElementAdress->nextElementAdress;
+        printf("%d ", currentElementPtr->value);
+        currentElementPtr = currentElementPtr->nextElementPtr;
     }
     printf("\n");
     return 0;
 }
 
-int lengthOfStack(Stack* stackAdress, int* lengthAdress)
+int lengthOfStack(Stack* stackPtr, int* lengthPtr)
 {
-    if (stackAdress == NULL || lengthAdress == NULL)
+    if (stackPtr == NULL || lengthPtr == NULL)
     {
         return -1;
     }
-    *lengthAdress = 0;
-    StackElement* currentElementAdress = stackAdress->lastElementAdress;
-    while (currentElementAdress != NULL)
+    *lengthPtr = 0;
+    StackElement* currentElementPtr = stackPtr->lastElementPtr;
+    while (currentElementPtr != NULL)
     {
-        (*lengthAdress)++;
-        currentElementAdress = currentElementAdress->nextElementAdress;
+        (*lengthPtr)++;
+        currentElementPtr = currentElementPtr->nextElementPtr;
     }
     return 0;
 }
 
-int freeStack(Stack* stackAdress)
+void freeStack(Stack* stackPtr)
 {
-    if (stackAdress == NULL)
+    if (stackPtr == NULL)
     {
-        return -1;
+        return;
     }
-    StackElement* currentElementAdress = stackAdress->lastElementAdress;
-    while (currentElementAdress != NULL)
+    StackElement* currentElementPtr = stackPtr->lastElementPtr;
+    while (currentElementPtr != NULL)
     {
-        stackAdress->lastElementAdress = currentElementAdress->nextElementAdress;
-        free(currentElementAdress);
-        currentElementAdress = stackAdress->lastElementAdress;
+        stackPtr->lastElementPtr = currentElementPtr->nextElementPtr;
+        free(currentElementPtr);
+        currentElementPtr = stackPtr->lastElementPtr;
     }
-    return 0;
+    free(stackPtr);
 }
-
+bool isEmptyOrNull(Stack* stackPtr)
+{
+    return stackPtr == NULL || stackPtr->lastElementPtr == NULL;
+}
