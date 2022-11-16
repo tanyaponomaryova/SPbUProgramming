@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+
 typedef struct Node
 {
     int key;
@@ -60,7 +61,7 @@ void updateHeight(Node* nodePtr)
     nodePtr->height = max(heightLeft, heightRight) + 1;
 }
 
-Node* littleRightRotate(Node* yPtr)
+Node* littleRightRotation(Node* yPtr)
 {
     Node* xPtr = yPtr->leftChildPtr;
     Node* xRightPtr = xPtr->rightChildPtr;
@@ -95,41 +96,46 @@ Node* balance(Node* nodePtr)
         return nodePtr;
     }
     updateHeight(nodePtr);
-    if (getBalanceFactor(nodePtr) == 2) // левое дерево выше
+    if (getBalanceFactor(nodePtr) == 2) // левое дерево выше (это значит, что оно точно есть и в нём как минимум 2 узла)
     {
         if (getBalanceFactor(nodePtr->leftChildPtr) < 0) // правый ребенок левого ребенка выше -> нужно сделать малое левое вращение
         {
             nodePtr->leftChildPtr = littleLeftRotation(nodePtr->leftChildPtr);
         }
-        return littleRightRotate(nodePtr);
+        return littleRightRotation(nodePtr);
     }
-    if (getBalanceFactor(nodePtr) == -2) // правое дерево выше
+    if (getBalanceFactor(nodePtr) == -2) // правое дерево выше (это значит, что оно точно есть и в нём как минимум 2 узла)
     {
         if (getBalanceFactor(nodePtr->rightChildPtr) > 0) // левый ребенок правого ребенка выше -> нужно сделать малое правое вращение
         {
-            nodePtr->rightChildPtr = littleRightRotate(nodePtr->rightChildPtr);
+            nodePtr->rightChildPtr = littleRightRotation(nodePtr->rightChildPtr);
         }
         return littleLeftRotation(nodePtr);
     }
     return nodePtr; // если баланс -1, 0, 1, то с узлом ничего не делаем
 }
 
-Node* insertNode(Node* nodePtr, int key, char* string)
+Node* insertNode(Node* nodePtr, int key, char* string, int* errorCode)
 {
     if (nodePtr == NULL)
     {
         Node* newNode = calloc(1, sizeof(Node));
+        if (newNode == NULL)
+        {
+            *errorCode = -1;
+            return NULL;
+        }
         newNode->key = key;
         newNode->string = string;
         return newNode;
     }
     if (key < nodePtr->key)
     {
-        nodePtr->leftChildPtr = insertNode(nodePtr->leftChildPtr, key, string);
+        nodePtr->leftChildPtr = insertNode(nodePtr->leftChildPtr, key, string, errorCode);
     }
     else if (key > nodePtr->key)
     {
-        nodePtr->rightChildPtr = insertNode(nodePtr->rightChildPtr, key, string);
+        nodePtr->rightChildPtr = insertNode(nodePtr->rightChildPtr, key, string, errorCode);
     }
     else // key == nodePtr->key
     {
@@ -153,8 +159,9 @@ int addKeyAndString(Tree* treePtr, int key, char* string)
         return -1;
     }
     strcpy(newString, string);
-    treePtr->rootPtr = insertNode(treePtr->rootPtr, key, newString);
-    return 0;
+    int errorCode = 0;
+    treePtr->rootPtr = insertNode(treePtr->rootPtr, key, newString, &errorCode);
+    return errorCode;
 }
 
 Node* minKeyNode(Node* nodePtr)
@@ -167,27 +174,36 @@ Node* minKeyNode(Node* nodePtr)
     return currentNodePtr;
 }
 
-void transferData(Node* destinationNode, Node* sourceNode)
+void transferData(Node* destinationNode, Node* sourceNode, int* errorCode)
 {
+    *errorCode = 0;
     free(destinationNode->string);
     destinationNode->key = sourceNode->key;
     destinationNode->string = calloc(strlen(sourceNode->string) + 1, sizeof(char));
+    if (destinationNode->string == NULL)
+    {
+        *errorCode = -1;
+        return;
+    }
     strcpy(destinationNode->string, sourceNode->string);
 }
 
-void deleteNode(Node** nodePtrPtr, int key)
+void deleteNode(Node** nodePtrPtr, int key, int* errorCode, bool* isDeleted)
 {
+    *errorCode = 0;
+    *isDeleted = true;
     if (*nodePtrPtr == NULL) // не нашли узел с нужным ключом
     {
+        *isDeleted = false;
         return;
     }
     if (key < (*nodePtrPtr)->key)
     {
-        deleteNode(&(*nodePtrPtr)->leftChildPtr, key);
+        deleteNode(&(*nodePtrPtr)->leftChildPtr, key, errorCode, isDeleted);
     }
     else if (key > (*nodePtrPtr)->key)
     {
-        deleteNode(&(*nodePtrPtr)->rightChildPtr, key);
+        deleteNode(&(*nodePtrPtr)->rightChildPtr, key, errorCode, isDeleted);
     }
     else // key == nodePtr->key - нашли узел который нужно удалить
     {
@@ -212,50 +228,63 @@ void deleteNode(Node** nodePtrPtr, int key)
         else if ((*nodePtrPtr)->leftChildPtr != NULL && (*nodePtrPtr)->rightChildPtr != NULL)
         {
             Node* tempNodePtr = minKeyNode((*nodePtrPtr)->rightChildPtr);
-            transferData(*nodePtrPtr, tempNodePtr);
-            deleteNode(&(*nodePtrPtr)->rightChildPtr, (*nodePtrPtr)->key);
+            int errorCodeTransferData = 0;
+            transferData(*nodePtrPtr, tempNodePtr, &errorCodeTransferData);
+            if (errorCodeTransferData != 0)
+            {
+                *errorCode = errorCodeTransferData;
+                return;
+            }
+            deleteNode(&(*nodePtrPtr)->rightChildPtr, (*nodePtrPtr)->key, errorCode, isDeleted);
         }
     } // после того как вставили новый узел и рекурсивно вернулись, балансируем все узлы выше
     (*nodePtrPtr) = balance(*nodePtrPtr);
 }
 
-int deleteNodeFromTree(Tree* treePtr, int key)
+int deleteNodeFromTree(Tree* treePtr, int key, bool* isDeleted)
 {
+    int errorCode = 0;
     if (treePtr == NULL)
     {
         return -2;
     }
-    deleteNode(&(treePtr->rootPtr), key);
-    return 0;
+    deleteNode(&(treePtr->rootPtr), key, &errorCode, isDeleted);
+    return errorCode; // -1 если произошла ошибка выделения памяти при вызове каллока в transferData(), 0 если всё норм
 }
 
-char* getStringFromNode(Node* nodePtr, int key)
+char* getStringFromNode(Node* nodePtr, int key, int* errorCode)
 {
-    if (nodePtr == NULL)
+    if (nodePtr == NULL) // не нашли нужный узел с ключом
     {
         return NULL;
     }
     if (key == nodePtr->key)
     {
         char* newString = calloc(strlen(nodePtr->string) + 1, sizeof(char));
+        if (newString == NULL)
+        {
+            *errorCode = -1;
+            return NULL;
+        }
         strcpy(newString, nodePtr->string);
         return newString;
     }
     if (key < nodePtr->key)
     {
-        return getStringFromNode(nodePtr->leftChildPtr, key);
+        return getStringFromNode(nodePtr->leftChildPtr, key, errorCode);
     } // key > nodePtr->key
-    return getStringFromNode(nodePtr->rightChildPtr, key);
+    return getStringFromNode(nodePtr->rightChildPtr, key, errorCode);
 }
 
-int getStringFromTree(Tree* treePtr, int key, char** destinationStringPtr)
+int getStringFromTree(Tree* treePtr, int key, char** destinationStringPtr) // принимает на вход строку, под которую выделяет память и копирует строку из нужного узла
 {
     if (treePtr == NULL)
     {
         return -2;
     }
-    *destinationStringPtr = getStringFromNode(treePtr->rootPtr, key);
-    return 0;
+    int errorCode = 0;
+    *destinationStringPtr = getStringFromNode(treePtr->rootPtr, key, &errorCode);
+    return errorCode;
 }
 
 bool isFoundInNode(Node* nodePtr, int key)
@@ -275,9 +304,14 @@ bool isFoundInNode(Node* nodePtr, int key)
     return true;
 }
 
-bool isFoundInTree(Tree* treePtr, int key)
+int isFoundInTree(Tree* treePtr, int key, bool* isFound)
 {
-    return isFoundInNode(treePtr->rootPtr, key);
+    if (treePtr == NULL)
+    {
+        return -2;
+    }
+    *isFound = isFoundInNode(treePtr->rootPtr, key);
+    return 0;
 }
 
 void printNode(Node* nodePtr)
@@ -286,17 +320,24 @@ void printNode(Node* nodePtr)
     {
         return;
     }
-    printf(" (%d %s)", nodePtr->key, nodePtr->string);
+    printf(" (%d, %s)", nodePtr->key, nodePtr->string);
     printNode(nodePtr->leftChildPtr);
     printNode(nodePtr->rightChildPtr);
 }
 
 void printTreeInPreOrder(Tree* treePtr)
 {
-    if (treePtr == NULL || treePtr->rootPtr == NULL)
+    if (treePtr == NULL)
     {
+        printf("Tree is a null pointer. :( \n");
         return;
     }
+    if (treePtr->rootPtr == NULL)
+    {
+        printf("Tree is empty. \n");
+        return;
+    }
+    printf("Tree: ");
     printNode(treePtr->rootPtr);
     printf("\n");
 }
@@ -322,9 +363,3 @@ void freeTree(Tree* treePtr)
     freeNode(treePtr->rootPtr);
     free(treePtr);
 }
-
-
-
-
-
-

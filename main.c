@@ -5,10 +5,10 @@
 void printCommands()
 {
     printf("Enter: \n0 - to exit, \n");
-    printf("1 - to add string by key, \n");
+    printf("1 - to add key and string, \n");
     printf("2 - to get string by key, \n");
     printf("3 - to check for presence of a given key, \n");
-    printf("4 - to remove given key with its string, \n");
+    printf("4 - to remove given key with string, \n");
     printf("5 - to print tree in pre-order. \n");
 }
 
@@ -16,7 +16,12 @@ int main()
 {
     printf("Welcome to interactive AVL-tree! \n");
     Tree* treePtr = NULL;
-    createTree(&treePtr);
+    int errorCode = createTree(&treePtr);
+    if (errorCode == -1)
+    {
+        printf("Memory allocation error while creating a tree. :(");
+        return -1;
+    }
     bool shouldGoOut = false;
     while (!shouldGoOut)
     {
@@ -50,7 +55,17 @@ int main()
                 printf("Enter string: ");
                 char string[1000] = {0};
                 scanf("%s", string);
-                addKeyAndString(treePtr, key, string);
+                errorCode = addKeyAndString(treePtr, key, string);
+                if (errorCode == 0)
+                {
+                    printf("Key and string are successfully added to tree! \n");
+                }
+                else
+                {
+                    printf("Memory allocation error while adding key and string. \n");
+                    freeTree(treePtr);
+                    return -1;
+                }
                 break;
             }
             case 2:
@@ -65,10 +80,19 @@ int main()
                     isScanned = scanf("%d", &key);
                 }
                 char* destinationString = NULL;
-                getStringFromTree(treePtr, key, &destinationString);
+                errorCode = getStringFromTree(treePtr, key, &destinationString);
                 if (destinationString == NULL)
                 {
-                    printf("Entered key is not found :( \n");
+                    if (errorCode == 0)
+                    {
+                        printf("Entered key is not found :( \n");
+                    }
+                    else
+                    {
+                        printf("Memory allocation error while getting string from tree. \n");
+                        freeTree(treePtr);
+                        return -1;
+                    }
                 }
                 else
                 {
@@ -88,7 +112,9 @@ int main()
                     printf("Incorrect input, try again: ");
                     isScanned = scanf("%d", &key);
                 }
-                if (isFoundInTree(treePtr, key))
+                bool isFound = false;
+                isFoundInTree(treePtr, key, &isFound);
+                if (isFound)
                 {
                     printf("Entered key exists. \n");
                 }
@@ -109,7 +135,25 @@ int main()
                     printf("Incorrect input, try again: ");
                     isScanned = scanf("%d", &key);
                 }
-                deleteNodeFromTree(treePtr, key);
+                bool isDeleted = false;
+                errorCode = deleteNodeFromTree(treePtr, key, &isDeleted);
+                if (errorCode == 0) // нет ошибок
+                {
+                    if (isDeleted)
+                    {
+                        printf("Key and string are successfully deleted! \n");
+                    }
+                    else
+                    {
+                        printf("Key and string are not found. \n");
+                    }
+                }
+                else if (errorCode == -1)
+                {
+                    printf("Memory allocation error while deleting key and string. :( \n");
+                    freeTree(treePtr);
+                    return -1;
+                }
                 break;
             }
             case 5:
