@@ -16,18 +16,14 @@ int main()
         fscanf(file, "%d", &array[length]);
         length++;
     }
-
     fclose(file);
-
     printf("Array from input file: ");
     for (int i = 0; i < length; i++)
     {
         printf("%d ", array[i]);
     }
     printf("\n");
-
     int mostFrequentElement = searchMostFrequentElement(array, length);
     printf("Most frequent element in array: %d", mostFrequentElement);
-
     return 0;
 }

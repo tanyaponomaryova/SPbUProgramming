@@ -1,44 +1,35 @@
 #include "qsort.h"
 
-void swap(int* a, int* b)
+void swap(int* firstElement, int* secondElement)
 {
-    int temp = *a;
-    *a = *b;
-    *b = temp;
+    int temp = *firstElement;
+    *firstElement = *secondElement;
+    *secondElement = temp;
 }
 
 int partition(int array[], int start, int end)
 {
     int pivot = array[start];
-    int rightIndex = end;
-    int leftIndex = start + 1;
-    while (rightIndex > leftIndex)
+    int partitionIndex = end;
+    for (int i = end; i > start; i--)
     {
-        while (array[leftIndex] <= pivot)
+        if (array[i] >= pivot)
         {
-            leftIndex++;
-        }
-        while (array[rightIndex] > pivot)
-        {
-            rightIndex--;
-        }
-        if (leftIndex < rightIndex)
-        {
-            swap(&array[leftIndex], &array[rightIndex]);
+            swap(&array[i], &array[partitionIndex]);
+            partitionIndex--;
         }
     }
-    swap(&array[start], &array[rightIndex]);
-
-    return rightIndex;
+    swap(&array[start], &array[partitionIndex]);
+    return partitionIndex;
 }
 
 void quickSort(int array[], int start, int end)
 {
-    if (end - start + 1 <= 1)
+    if (end <= start)
     {
         return;
     }
-    int pivotIndex = partition(array, start, end);
-    quickSort(array, start, pivotIndex - 1);
-    quickSort(array, pivotIndex + 1, end);
+    int partitionIndex = partition(array, start, end);
+    quickSort(array, start, partitionIndex - 1);
+    quickSort(array, partitionIndex + 1, end);
 }
