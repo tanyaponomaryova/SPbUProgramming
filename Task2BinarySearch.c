@@ -2,7 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-void printArray (int array[], int length) //length
+void printArray(int array[], int length)
 {
     for (int i = 0; i < length; i++)
     {
@@ -11,61 +11,51 @@ void printArray (int array[], int length) //length
     printf("\n");
 }
 
-void swap(int* a, int* b)
+void swap(int *firstElement, int *secondElement)
 {
-    int temp = *a;
-    *a = *b;
-    *b = temp;
+    int temp = *firstElement;
+    *firstElement = *secondElement;
+    *secondElement = temp;
 }
 
-int partition(int array[], int start, int end) //indexes
+int partition(int array[], int start, int end)
 {
     int pivot = array[start];
-    int rightIndex = end;
-    int leftIndex = start + 1;
-    while (rightIndex > leftIndex)
+    int partitionIndex = end;
+    for (int i = end; i > start; i--)
     {
-        while (array[leftIndex] <= pivot)
+        if (array[i] >= pivot)
         {
-            leftIndex++;
-        }
-        while (array[rightIndex] > pivot)
-        {
-            rightIndex--;
-        }
-        if (leftIndex < rightIndex)
-        {
-            swap(&array[leftIndex], &array[rightIndex]);
+            swap(&array[i], &array[partitionIndex]);
+            partitionIndex--;
         }
     }
-    swap(&array[start], &array[rightIndex]);
-
-    return rightIndex;
+    swap(&array[start], &array[partitionIndex]);
+    return partitionIndex;
 }
 
 void quickSort(int array[], int start, int end)
 {
-    if (end - start + 1 <= 1)
+    if (end <= start)
     {
         return;
     }
-    int pivotIndex = partition(array, start, end);
-    quickSort(array, start, pivotIndex - 1);
-    quickSort(array, pivotIndex + 1, end);
+    int partitionIndex = partition(array, start, end);
+    quickSort(array, start, partitionIndex - 1);
+    quickSort(array, partitionIndex + 1, end);
 }
 
-int binarySearch(int array[], int length, int number) //return 0 or 1
+int binarySearch(int array[], int length, int number)
 {
     int left = -1;
     int right = length;
     while (right - left > 1)
     {
-        int mid = (right + left)/2;
+        int mid = (right + left) / 2;
         if (array[mid] > number)
         {
             right = mid;
-        }
-        else
+        } else
         {
             left = mid;
         }
@@ -88,7 +78,7 @@ int main()
         printf("You didn't enter a natural number, try again: ");
         scanned = scanf("%d", &length);
     }
-    int* array = calloc(length, sizeof(int));
+    int *array = calloc(length, sizeof(int));
     if (NULL == array)
     {
         printf("Error allocating memory for array");
@@ -99,11 +89,11 @@ int main()
     {
         array[i] = rand() % 10;
     }
-
+    printf("Randomly generated array of length %d: ", length);
     printArray(array, length);
+    printf("Sorted array:");
     quickSort(array, 0, length - 1);
     printArray(array, length);
-
 
     printf("Enter amount of numbers to be searched in array (natural number): ");
     int amountOfNumbers = 0;
@@ -114,17 +104,17 @@ int main()
         printf("You didn't enter a natural number, try again: ");
         scanned = scanf("%d", &amountOfNumbers);
     }
-
     for (int i = 0; i < amountOfNumbers; i++)
     {
-        int randomNumber = rand()%15;
+        int randomNumber = rand() % 15;
         if (binarySearch(array, length, randomNumber))
         {
             printf("%d is in the generated array \n", randomNumber);
-        }
-        else
+        } else
         {
             printf("%d is not in the generated array \n", randomNumber);
         }
     }
+    free(array);
+    return 0;
 }
