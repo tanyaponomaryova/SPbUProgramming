@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-
 #define BASESIZE 100
 #define LEN 100
 
@@ -54,9 +53,7 @@ void addEntry(Entry arrayOfEntries[], int* entriesCounter)
         scanf("%s", &(arrayOfEntries[*entriesCounter].name));
         printf("Enter phone (without spaces): ");
         scanf("%s", &(arrayOfEntries[*entriesCounter].phone));
-
         (*entriesCounter)++;
-
         printf("Entry created! \n");
     }
 }
@@ -81,7 +78,6 @@ void findPhone(Entry arrayOfEntries[], int entriesCounter)
     printf("To find phone by name enter name (without spaces):");
     char name[LEN] = "";
     scanf("%s", name);
-
     bool isFound = false;
     for (int i = 0; i < entriesCounter; ++i)
     {
@@ -106,7 +102,6 @@ void findName(Entry arrayOfEntries[], int entriesCounter)
     printf("To find name by phone enter phone number (without spaces):");
     char phone[LEN] = "";
     scanf("%s", phone);
-
     bool isFound = false;
     for (int i = 0; i < entriesCounter; ++i)
     {
@@ -150,9 +145,7 @@ void saveData(Entry arrayOfEntries[], int entriesCounter, char* filename)
 int main() {
     printf("Welcome to the Phonebook!");
     Entry* base = calloc(BASESIZE, sizeof(Entry));
-
     int entriesCounter = 0;
-
     entriesCounter = readAndCountEntriesFromFile(base, "database.txt");
     if (entriesCounter == -1)
     {
@@ -163,7 +156,6 @@ int main() {
     while (!shouldGoOut)
     {
         begin();
-
         int input = 0;
         int scanned = scanf("%d", &input);
         while (scanned == 0 || input < 0 || input > 5)
@@ -172,7 +164,6 @@ int main() {
             printf("Incorrect input, try again: ");
             scanned = scanf("%d", &input);
         }
-
         if (input == 0)
         {
             shouldGoOut = true;

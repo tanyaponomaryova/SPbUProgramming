@@ -1,15 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <locale.h>
-
-#define SIZE (int)sizeof(int) * 8 // размер типа int в битах
+#define SIZE ((int)sizeof(int) * 8) // размер типа int в битах
 
 void printBinaryNumber(int array[])
 {
     int j = 0;
     for (; j < SIZE - 1 && array[j] == 0; j++); // пропускаем незначащие нули и останавливаемся на первом разряде на случай если распечатываемое число == 0
-
     for (int i = j; i < SIZE; i++)
     {
         printf("%d", array[i]);
@@ -44,16 +41,15 @@ int convertToDecimal(int binaryNumber[])
     for (int i = SIZE - 1; i >= 0; i--)
     {
         decimalNumber += powerOfTwo * binaryNumber[i];
-        powerOfTwo *= 2; 
+        powerOfTwo *= 2;
     }
     return decimalNumber;
 }
 
 int main()
 {
-    printf("This program takes two integers as input, converts them to binary numbers, \n"); 
+    printf("This program takes two integers as input, converts them to binary numbers, \n");
     printf("calculates their sum in binary representation and then converts their sum to decimal number!\n");
-
     printf("Enter first number: ");
     int firstNumber = 0;
     int scanned = scanf("%d", &firstNumber);
@@ -63,7 +59,6 @@ int main()
         printf("You didn't enter a number, try again: ");
         scanned = scanf("%d", &firstNumber);
     }
-
     printf("Enter second number: ");
     int secondNumber = 0;
     scanned = scanf("%d", &secondNumber);
@@ -73,7 +68,6 @@ int main()
         printf("You didn't enter a number, try again: ");
         scanned = scanf("%d", &secondNumber);
     }
-
     printf("Binary representation of first number: ");
     int firstBin[SIZE] = {0};
     convertToBinary(firstNumber, firstBin);
@@ -91,6 +85,5 @@ int main()
 
     printf("Sum of entered numbers in decimal representation: ");
     printf("%d", convertToDecimal(sumOfNumbers));
-
     return 0;
 }
