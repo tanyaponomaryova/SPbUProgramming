@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-void printArray (int array[], int length) //length
+
+void printArray(int array[], int length)
 {
     for (int i = 0; i < length; i++)
     {
@@ -10,47 +11,38 @@ void printArray (int array[], int length) //length
     printf("\n");
 }
 
-void swap(int* a, int* b)
+void swap(int *firstElement, int *secondElement)
 {
-    int temp = *a;
-    *a = *b;
-    *b = temp;
+    int temp = *firstElement;
+    *firstElement = *secondElement;
+    *secondElement = temp;
 }
 
-int partition(int array[], int start, int end) //indexes
+int partition(int array[], int start, int end)
 {
     int pivot = array[start];
-    int rightIndex = end;
-    int leftIndex = start + 1;
-    while (rightIndex > leftIndex)
+    int partitionIndex = end;
+    for (int i = end; i > start; i--)
     {
-        while (array[leftIndex] <= pivot)
+        if (array[i] >= pivot)
         {
-            leftIndex++;
-        }
-        while (array[rightIndex] > pivot)
-        {
-            rightIndex--;
-        }
-        if (leftIndex < rightIndex)
-        {
-            swap(&array[leftIndex], &array[rightIndex]);
+            swap(&array[i], &array[partitionIndex]);
+            partitionIndex--;
         }
     }
-    swap(&array[start], &array[rightIndex]);
-
-    return rightIndex;
+    swap(&array[start], &array[partitionIndex]);
+    return partitionIndex;
 }
 
 void quickSort(int array[], int start, int end)
 {
-    if (end - start + 1 <= 1)
+    if (end <= start)
     {
         return;
     }
-    int pivotIndex = partition(array, start, end);
-    quickSort(array, start, pivotIndex - 1);
-    quickSort(array, pivotIndex + 1, end);
+    int partitionIndex = partition(array, start, end);
+    quickSort(array, start, partitionIndex - 1);
+    quickSort(array, partitionIndex + 1, end);
 }
 
 int searchMostFrequentElement(int array[], int length)
@@ -64,16 +56,19 @@ int searchMostFrequentElement(int array[], int length)
         if (array[i] == array[i - 1])
         {
             counter++;
+        } else
+        {
             if (counter > maxCounter)
             {
+                mostFrequentElement = array[i - 1];
                 maxCounter = counter;
-                mostFrequentElement = array[i];
             }
-        }
-        else
-        {
             counter = 1;
-        } 
+        }
+    }
+    if (counter > maxCounter)
+    {
+        mostFrequentElement = array[length - 2];
     }
     return mostFrequentElement;
 }
@@ -89,7 +84,8 @@ int main()
         printf("You didn't enter a natural number, try again: ");
         scanned = scanf("%d", &length);
     }
-    int* array = calloc(length, sizeof(int));
+
+    int *array = calloc(length, sizeof(int));
     if (NULL == array)
     {
         printf("Error allocating memory for array");
@@ -101,11 +97,11 @@ int main()
         array[i] = rand() % 10;
     }
 
-
     printf("Generated array: ");
     printArray(array, length);
     printf("Most frequently occurring element in array: ");
     printf("%d\n", searchMostFrequentElement(array, length));
 
+    free(array);
     return 0;
 }
