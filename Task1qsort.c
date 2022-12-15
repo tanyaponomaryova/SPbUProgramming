@@ -2,15 +2,26 @@
 #include <stdlib.h>
 #include <time.h>
 
-
-void swap(int* a, int* b)
+int isArraySorted(int array[], int length)
 {
-    int temp = *a;
-    *a = *b;
-    *b = temp;
+    for (int i = 1; i < length; i++)
+    {
+        if (array[i - 1] > array[i])
+        {
+            return 0;
+        }
+    }
+    return 1;
 }
 
-void printArray (int array[], int length) //length
+void swap(int *firstElement, int *secondElement)
+{
+    int temp = *firstElement;
+    *firstElement = *secondElement;
+    *secondElement = temp;
+}
+
+void printArray(int array[], int length)
 {
     for (int i = 0; i < length; i++)
     {
@@ -19,42 +30,33 @@ void printArray (int array[], int length) //length
     printf("\n");
 }
 
-void insertionSort (int array[], int start, int finish) //indexes
+void insertionSort(int array[], int start, int end)
 {
-    for (int i = start + 1; i <= finish; i++)
-    {   
+    for (int i = start + 1; i <= end; i++)
+    {
         int currentIndex = i;
         while (currentIndex > start && array[currentIndex] < array[currentIndex - 1])
         {
             swap(&array[currentIndex], &array[currentIndex - 1]);
-            currentIndex -= 1;
+            currentIndex--;
         }
     }
 }
 
-int partition(int array[], int start, int end) //indexes
+int partition(int array[], int start, int end)
 {
     int pivot = array[start];
-    int rightIndex = end;
-    int leftIndex = start + 1;
-    while (rightIndex > leftIndex)
+    int partitionIndex = end;
+    for (int i = end; i > start; i--)
     {
-        while (array[leftIndex] <= pivot)
+        if (array[i] >= pivot)
         {
-            leftIndex++;
-        }
-        while (array[rightIndex] > pivot)
-        {
-            rightIndex--;
-        }
-        if (leftIndex < rightIndex)
-        {
-            swap(&array[leftIndex], &array[rightIndex]);
+            swap(&array[i], &array[partitionIndex]);
+            partitionIndex--;
         }
     }
-    swap(&array[start], &array[rightIndex]);
-
-    return rightIndex;
+    swap(&array[start], &array[partitionIndex]);
+    return partitionIndex;
 }
 
 void quickSort(int array[], int start, int end)
@@ -64,9 +66,9 @@ void quickSort(int array[], int start, int end)
         insertionSort(array, start, end);
         return;
     }
-    int pivotIndex = partition(array, start, end);
-    quickSort(array, start, pivotIndex - 1);
-    quickSort(array, pivotIndex + 1, end);
+    int partitionIndex = partition(array, start, end);
+    quickSort(array, start, partitionIndex - 1);
+    quickSort(array, partitionIndex + 1, end);
 }
 
 int main()
@@ -80,7 +82,7 @@ int main()
         printf("You didn't enter a natural number, try again: ");
         scanned = scanf("%d", &length);
     }
-    int* array = calloc(length, sizeof(int));
+    int *array = calloc(length, sizeof(int));
     if (NULL == array)
     {
         printf("Error allocating memory for array");
@@ -91,15 +93,17 @@ int main()
     {
         array[i] = rand() % 100;
     }
-
-
     printf("Randomly generated array: ");
     printArray(array, length);
     quickSort(array, 0, length - 1);
-    printf("Sorted array: ");
-    printArray(array, length);
-
+    if (isArraySorted(array, length))
+    {
+        printf("Sorted array: ");
+        printArray(array, length);
+    } else
+    {
+        printf("Sorting error somewhere :0");
+    }
     free(array);
-    array = NULL;
     return 0;
 }
