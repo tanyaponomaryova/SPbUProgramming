@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include "../stack/stack.h"
 
+#define STRING_LENGTH 100
+
 typedef enum Error // ошибки выполнения функции calculateInReversePolishNotation
 {
     Ok,
@@ -12,13 +14,9 @@ typedef enum Error // ошибки выполнения функции calculate
     LackOfOperationSigns
 } Error;
 
-void performArithmeticOperation(Stack* stackPtr, char operation)
+int performArithmeticOperation(int operand1, int operand2, char operation)
 {
-    int operand2 = 0;
-    int operand1 = 0;
     int result = 0;
-    pop(stackPtr, &operand2);
-    pop(stackPtr, &operand1);
     switch (operation)
     {
         case '+':
@@ -33,53 +31,78 @@ void performArithmeticOperation(Stack* stackPtr, char operation)
         case '/':
             result = operand1 / operand2;
     }
-    push(stackPtr, result);
+    return result;
 }
 
-Error calculateInReversePolishNotation(int* resultPtr)
+Error calculateInReversePolishNotation(char *postfixExpression, int *resultPtr)
 {
-    Stack* stackPtr = NULL;
-    bool isCreated = !createStack(&stackPtr);
-    if (!isCreated)
+    Stack *stackPtr = NULL;
+    int errorCode = createStack(&stackPtr);
+    if (errorCode != 0)
     {
         return MemoryAllocationError;
     }
-    printf("Enter postfix expression: ");
-    for (char scannedSymbol = getchar(); scannedSymbol != '\n'; scannedSymbol = getchar())
+    for (int i = 0; postfixExpression[i] != '\0'; i++)
     {
-        if (scannedSymbol - '0' <= 9 && scannedSymbol - '0' >= 0) // проверка, что прочитанный символ это символ цифры: коды цифр в аски - это 48-57
+        if (postfixExpression[i] - '0' <= 9 && postfixExpression[i] - '0' >=
+                                               0) // проверка, что прочитанный символ это символ цифры: коды цифр в аски - это 48-57
         {
-            push(stackPtr, (int)(scannedSymbol - '0')); // добавили int в стек
-        }
-        else if (scannedSymbol == '+' || scannedSymbol == '-' || scannedSymbol == '*' || scannedSymbol == '/')
+            errorCode = push(stackPtr, (int) (postfixExpression[i] - '0')); // добавили int в стек
+            if (errorCode != 0)
+            {
+                freeStack(stackPtr);
+                return errorCode;
+            }
+        } else if (postfixExpression[i] == '+' || postfixExpression[i] == '-' || postfixExpression[i] == '*' ||
+                   postfixExpression[i] == '/')
         {
             if (isEmptyOrNull(stackPtr)) // в стеке нет цифр, над которыми можно было бы провести введенную операцию
             {
                 freeStack(stackPtr);
                 return LackOfOperands;
             }
-            int topValue = 0;
-            pop(stackPtr, &topValue); // достали вершину
-            if (isEmptyOrNull(stackPtr)) // проверка, что стек не пуст после того, как мы достали вершину (то есть там хотя бы две цифры)
+            int operand1 = 0;
+            int operand2 = 0;
+            errorCode = pop(stackPtr, &operand2);
+            if (errorCode != 0)
+            {
+                freeStack(stackPtr);
+                return errorCode;
+            }
+            if (isEmptyOrNull(stackPtr))
             {
                 freeStack(stackPtr);
                 return LackOfOperands;
             }
-            if ((scannedSymbol == '/' && topValue == 0)) // проверка, что не происходит деление на ноль
+            errorCode = pop(stackPtr, &operand1);
+            if (errorCode != 0)
+            {
+                freeStack(stackPtr);
+                return errorCode;
+            }
+            if (postfixExpression[i] == '/' && operand2 == 0) // проверка, что не происходит деление на ноль
             {
                 freeStack(stackPtr);
                 return DivisionByZero;
             }
-            push(stackPtr, topValue); // положили вершину обратно
-            performArithmeticOperation(stackPtr, scannedSymbol);
-        }
-        else // прочитанный символ - это не цифра и не знак операции
+            errorCode = push(stackPtr, performArithmeticOperation(operand1, operand2, postfixExpression[i]));
+            if (errorCode != 0)
+            {
+                freeStack(stackPtr);
+                return errorCode;
+            }
+        } else // текущий символ - это не цифра и не знак операции
         {
             freeStack(stackPtr);
             return InvalidCharacters;
         }
     }
-    pop(stackPtr, resultPtr);
+    errorCode = pop(stackPtr, resultPtr);
+    if (errorCode != 0)
+    {
+        freeStack(stackPtr);
+        return errorCode;
+    }
     if (!isEmptyOrNull(stackPtr)) // если после того, как мы достали вершину стека, в нем ещё что-то осталось
     {
         freeStack(stackPtr);
@@ -89,10 +112,30 @@ Error calculateInReversePolishNotation(int* resultPtr)
     return Ok;
 }
 
+bool test()
+{
+    char *postfixExpression = "96-12+*";
+    int result = 0;
+    int errorCode = calculateInReversePolishNotation(postfixExpression, &result);
+    if (errorCode != 0)
+    {
+        return false;
+    }
+    return result == 9;
+}
+
 int main()
 {
+    if (!test())
+    {
+        printf("Test failed :(");
+        return -1;
+    }
+    printf("Enter postfix expression: ");
+    char postfixExpression[STRING_LENGTH] = {0};
+    scanf("%s", postfixExpression);
     int result = 0;
-    Error errorType = calculateInReversePolishNotation(&result);
+    Error errorType = calculateInReversePolishNotation(postfixExpression, &result);
     switch (errorType)
     {
         case MemoryAllocationError:

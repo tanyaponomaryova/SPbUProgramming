@@ -1,4 +1,4 @@
-#include "../stack/stack.h"
+#include "stack.h"
 
 typedef struct StackElement
 {
@@ -8,7 +8,7 @@ typedef struct StackElement
 
 typedef struct Stack
 {
-    StackElement* lastElementPtr;
+    StackElement* firstElementPtr;
 } Stack;
 
 int createStack(Stack** stackPtrPtr)
@@ -32,31 +32,31 @@ int push(Stack* stackPtr, int value)
     {
         return -1;
     }
-    newElementPtr->nextElementPtr = stackPtr->lastElementPtr;
+    newElementPtr->nextElementPtr = stackPtr->firstElementPtr;
     newElementPtr->value = value;
-    stackPtr->lastElementPtr = newElementPtr;
+    stackPtr->firstElementPtr = newElementPtr;
     return 0;
 }
 
 int top(Stack* stackPtr, int* value)
 {
-    if (stackPtr == NULL || stackPtr->lastElementPtr == NULL || value == NULL)
+    if (stackPtr == NULL || stackPtr->firstElementPtr == NULL || value == NULL)
     {
         return -2;
     }
-    *value = stackPtr->lastElementPtr->value;
+    *value = stackPtr->firstElementPtr->value;
     return 0;
 }
 
 int pop(Stack* stackPtr, int* value)
 {
-    if (stackPtr == NULL || stackPtr->lastElementPtr == NULL || value == NULL)
+    if (stackPtr == NULL || stackPtr->firstElementPtr == NULL || value == NULL)
     {
         return -2;
     }
-    *value = stackPtr->lastElementPtr->value;
-    StackElement* PtrTolastElementToFree = stackPtr->lastElementPtr;
-    stackPtr->lastElementPtr = stackPtr->lastElementPtr->nextElementPtr;
+    *value = stackPtr->firstElementPtr->value;
+    StackElement* PtrTolastElementToFree = stackPtr->firstElementPtr;
+    stackPtr->firstElementPtr = stackPtr->firstElementPtr->nextElementPtr;
     free(PtrTolastElementToFree);
     return 0;
 }
@@ -67,7 +67,7 @@ int printStack(Stack* stackPtr)
     {
         return -2;
     }
-    StackElement* currentElementPtr = stackPtr->lastElementPtr;
+    StackElement* currentElementPtr = stackPtr->firstElementPtr;
     if (currentElementPtr == NULL)
     {
         printf("Stack is empty. \n");
@@ -89,7 +89,7 @@ int lengthOfStack(Stack* stackPtr, int* lengthPtr)
         return -2;
     }
     *lengthPtr = 0;
-    StackElement* currentElementPtr = stackPtr->lastElementPtr;
+    StackElement* currentElementPtr = stackPtr->firstElementPtr;
     while (currentElementPtr != NULL)
     {
         (*lengthPtr)++;
@@ -104,17 +104,17 @@ void freeStack(Stack* stackPtr)
     {
         return;
     }
-    StackElement* currentElementPtr = stackPtr->lastElementPtr;
+    StackElement* currentElementPtr = stackPtr->firstElementPtr;
     while (currentElementPtr != NULL)
     {
-        stackPtr->lastElementPtr = currentElementPtr->nextElementPtr;
+        stackPtr->firstElementPtr = currentElementPtr->nextElementPtr;
         free(currentElementPtr);
-        currentElementPtr = stackPtr->lastElementPtr;
+        currentElementPtr = stackPtr->firstElementPtr;
     }
     free(stackPtr);
 }
 
 bool isEmptyOrNull(Stack* stackPtr)
 {
-    return stackPtr == NULL || stackPtr->lastElementPtr == NULL;
+    return stackPtr == NULL || stackPtr->firstElementPtr == NULL;
 }
