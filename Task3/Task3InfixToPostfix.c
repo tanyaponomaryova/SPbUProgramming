@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../stack/stack.h"
+
+#define STRING_LENGTH 100
 
 typedef enum Error
 {
@@ -27,12 +30,11 @@ int priority(char operation)
     return 3; // if operation == ')'
 }
 
-Error convertToPostfix()
+Error convertToPostfix(char *infixExpression, char **postfixExpression)
 {
-    printf("Enter arithmetic expression in infix form: ");
-    Stack* stackOfOperations = NULL;
+    Stack *stackOfOperations = NULL;
     createStack(&stackOfOperations);
-    Stack* outputStack = NULL;
+    Stack *outputStack = NULL;
     createStack(&outputStack);
     if (stackOfOperations == NULL || outputStack == NULL)
     {
@@ -40,14 +42,21 @@ Error convertToPostfix()
         freeStack(stackOfOperations);
         return MemoryAllocationError;
     }
-    for (char scannedSymbol = (char)getchar(); scannedSymbol != '\n'; scannedSymbol = (char)getchar())
+    Error errorCode = Ok;
+    for (int i = 0; infixExpression[i] != '\n' && infixExpression[i] != '\0'; i++)
     {
-        if (scannedSymbol - '0' <= 9 && scannedSymbol - '0' >= 0) // проверяем что введенный символ это цифра
+        if (infixExpression[i] - '0' <= 9 && infixExpression[i] - '0' >= 0) // проверяем что введенный символ это цифра
         {
-            push(outputStack, scannedSymbol); // цифра в любом случае сразу отправляется в выходную строку
-        }
-        else {
-            switch (scannedSymbol)
+            errorCode = push(outputStack, infixExpression[i]); // цифра в любом случае сразу отправляется в выходную строку
+            if (errorCode != Ok)
+            {
+                freeStack(outputStack);
+                freeStack(stackOfOperations);
+                return errorCode;
+            }
+        } else
+        {
+            switch (infixExpression[i])
             {
                 case '+':
                 case '-':
@@ -56,23 +65,47 @@ Error convertToPostfix()
                 {
                     while (!isEmptyOrNull(stackOfOperations))
                     {
-                        int topOfStack;
+                        int topOfStack = 0;
                         pop(stackOfOperations, &topOfStack); // достали верхушку
-                        if (priority(scannedSymbol) <= priority((char)topOfStack)) // если введённая операция <= по приоритету достанной верхушки, то верхушку кладём в выходную строку
+                        if (priority(infixExpression[i]) <= priority((char)topOfStack)) // если введённая операция <= по приоритету достанной верхушки, то верхушку кладём в выходную строку
                         {
-                            push(outputStack, topOfStack); //положили верхушку в выходную строку
+                            errorCode = push(outputStack, topOfStack); //положили верхушку в выходную строку
+                            if (errorCode != Ok)
+                            {
+                                freeStack(outputStack);
+                                freeStack(stackOfOperations);
+                                return errorCode;
+                            }
                         } else // засунем верхушку обратно и выйдем из while
                         {
-                            push(stackOfOperations, topOfStack);
+                            errorCode = push(stackOfOperations, topOfStack);
+                            if (errorCode != Ok)
+                            {
+                                freeStack(outputStack);
+                                freeStack(stackOfOperations);
+                                return errorCode;
+                            }
                             break;
                         }
                     }
-                    push(stackOfOperations, scannedSymbol); // когда введенный символ вытеснил тех кто >= его по приоритету он сам залез в стек
+                    errorCode = push(stackOfOperations, infixExpression[i]); // когда введенный символ вытеснил тех кто >= его по приоритету он сам залез в стек
+                    if (errorCode != Ok)
+                    {
+                        freeStack(outputStack);
+                        freeStack(stackOfOperations);
+                        return errorCode;
+                    }
                     break;
                 }
                 case '(':
                 {
-                    push(stackOfOperations, scannedSymbol);
+                    errorCode = push(stackOfOperations, infixExpression[i]);
+                    if (errorCode != Ok)
+                    {
+                        freeStack(outputStack);
+                        freeStack(stackOfOperations);
+                        return errorCode;
+                    }
                     break;
                 }
                 case ')':
@@ -87,21 +120,32 @@ Error convertToPostfix()
                             freeStack(stackOfOperations);
                             return UnbalancedBrackets;
                         }
-                        push(outputStack, topOfStack);
+                        errorCode = push(outputStack, topOfStack);
+                        if (errorCode != Ok)
+                        {
+                            freeStack(outputStack);
+                            freeStack(stackOfOperations);
+                            return errorCode;
+                        }
                         pop(stackOfOperations, &topOfStack);
                     }
                     break;
                 }
-                default: // любой другой символ кроме цифр, знаков операций и скобок
-                    freeStack(outputStack);
-                    freeStack(stackOfOperations);
-                    return IncorrectInput;
+                default: // любой другой символ кроме цифр, знаков операций, скобок и пробела
+                {
+                    if (infixExpression[i] != ' ')
+                    {
+                        freeStack(outputStack);
+                        freeStack(stackOfOperations);
+                        return IncorrectInput;
+                    }
+                }
             }
         }
     }
-    while(!isEmptyOrNull(stackOfOperations)) // достаём оставшиеся операции из стека операций
+    while (!isEmptyOrNull(stackOfOperations)) // достаём оставшиеся операции из стека операций
     {
-        int topOfStack;
+        int topOfStack = 0;
         pop(stackOfOperations, &topOfStack);
         if (topOfStack == '(') // если осталась открывающая скобка, значит для неё не хватило закрывающей
         {
@@ -109,32 +153,69 @@ Error convertToPostfix()
             freeStack(stackOfOperations);
             return UnbalancedBrackets;
         }
-        push(outputStack, topOfStack);
-    } // скопируем outputStack в строку, но в обратном порядке
+        errorCode = push(outputStack, topOfStack);
+        if (errorCode != Ok)
+        {
+            freeStack(outputStack);
+            freeStack(stackOfOperations);
+            return errorCode;
+        }
+    } // скопируем outputStack в строку postfixExpression, но в обратном порядке
     int length = 0;
     lengthOfStack(outputStack, &length);
-    char* string = calloc(length, sizeof(char));
-    for (int i = length - 1; i >= 0; i--)
+    *postfixExpression = calloc(length * 2 + 1, sizeof(char));
+    if (*postfixExpression == NULL)
     {
-        int topOfStack;
+        return MemoryAllocationError;
+    }
+    for (int i = length * 2 - 1; i >= 0; i -= 2)
+    {
+        int topOfStack = 0;
         pop(outputStack, &topOfStack);
-        string[i] = (char)topOfStack;
+        (*postfixExpression)[i - 1] = (char) topOfStack;
+        (*postfixExpression)[i] = ' ';
     }
-    printf("Postfix expression: ");
-    for (int i = 0; i < length; i++)
-    {
-        printf("%c ", string[i]);
-    }
+    (*postfixExpression)[length * 2] = '\0';
     freeStack(outputStack);
     freeStack(stackOfOperations);
     return Ok;
 }
 
+bool test()
+{
+    char* infixExpression = "(1 + 1) * 2";
+    char* postfixExpression = NULL;
+    Error errorCode = convertToPostfix(infixExpression, &postfixExpression);
+    if (errorCode != Ok)
+    {
+        free(postfixExpression);
+        return false;
+    }
+    if (!strcmp(postfixExpression, "1 1 + 2 * "))
+    {
+        free(postfixExpression);
+        return true;
+    }
+    return false;
+}
+
 int main()
 {
-    Error errorCode = convertToPostfix();
+    if (!test())
+    {
+        printf("Test is failed :(");
+        return -1;
+    }
+    printf("Enter arithmetic expression in infix form to convert it to postfix form (no more than %d characters long): ", STRING_LENGTH);
+    char infixExpression[STRING_LENGTH] = {0};
+    fgets(infixExpression, STRING_LENGTH + 1, stdin);
+    char *postfixExpression = NULL;
+    Error errorCode = convertToPostfix(infixExpression, &postfixExpression);
     switch (errorCode)
     {
+        case Ok:
+            printf("Postfix expression: %s", postfixExpression);
+            break;
         case MemoryAllocationError:
             printf("Memory allocation error :(");
             break;
@@ -144,4 +225,6 @@ int main()
         case IncorrectInput:
             printf("You entered invalid characters :(");
     }
+    free(postfixExpression);
+    return 0;
 }
