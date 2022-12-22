@@ -87,9 +87,9 @@ int main()
         printf("Test is failed :(");
         return -1;
     }
-    printf("Enter string to check brackets balance: ");
+    printf("Enter string to check brackets balance (no more than %d characters long): ", STRING_LENGTH);
     char string[STRING_LENGTH] = {0};
-    scanf("%s", string);
+    fgets(string, STRING_LENGTH + 1, stdin);
     Error result = isStringBalanced(string);
     if (result == Balanced)
     {

@@ -42,10 +42,9 @@ Error calculateInReversePolishNotation(char *postfixExpression, int *resultPtr)
     {
         return MemoryAllocationError;
     }
-    for (int i = 0; postfixExpression[i] != '\0'; i++)
+    for (int i = 0; postfixExpression[i] != '\n' && postfixExpression[i] != '\0'; i++)
     {
-        if (postfixExpression[i] - '0' <= 9 && postfixExpression[i] - '0' >=
-                                               0) // проверка, что прочитанный символ это символ цифры: коды цифр в аски - это 48-57
+        if (postfixExpression[i] - '0' <= 9 && postfixExpression[i] - '0' >= 0) // проверка, что прочитанный символ это символ цифры: коды цифр в аски - это 48-57
         {
             errorCode = push(stackPtr, (int) (postfixExpression[i] - '0')); // добавили int в стек
             if (errorCode != 0)
@@ -91,7 +90,7 @@ Error calculateInReversePolishNotation(char *postfixExpression, int *resultPtr)
                 freeStack(stackPtr);
                 return errorCode;
             }
-        } else // текущий символ - это не цифра и не знак операции
+        } else if (postfixExpression[i] != ' ')// текущий символ - это не цифра, не знак операции, не пробел
         {
             freeStack(stackPtr);
             return InvalidCharacters;
@@ -114,7 +113,7 @@ Error calculateInReversePolishNotation(char *postfixExpression, int *resultPtr)
 
 bool test()
 {
-    char *postfixExpression = "96-12+*";
+    char *postfixExpression = "9 6 - 1 2 + * ";
     int result = 0;
     int errorCode = calculateInReversePolishNotation(postfixExpression, &result);
     if (errorCode != 0)
@@ -131,9 +130,9 @@ int main()
         printf("Test failed :(");
         return -1;
     }
-    printf("Enter postfix expression: ");
+    printf("Enter postfix expression (no more than %d characters long): ", STRING_LENGTH);
     char postfixExpression[STRING_LENGTH] = {0};
-    scanf("%s", postfixExpression);
+    fgets(postfixExpression, STRING_LENGTH + 1, stdin);
     int result = 0;
     Error errorType = calculateInReversePolishNotation(postfixExpression, &result);
     switch (errorType)
