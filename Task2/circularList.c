@@ -1,42 +1,40 @@
 #include "circularList.h"
 
-struct Node
+typedef struct Node
 {
     int value;
-    struct Node* nextNodePtr;
-};
+    struct Node *nextNodePtr;
+} Node;
 
 struct List
 {
-    Node* headPtr;
-    Node* tailPtr;
+    Node *headPtr;
+    Node *tailPtr;
 };
 
-int createList(List** ptrToListPtr)
+int createList(List **ptrToListPtr)
 {
     *ptrToListPtr = calloc(1, sizeof(List));
     if (*ptrToListPtr == NULL)
     {
-        return -1;
+        return -2;
     }
-    (*ptrToListPtr)->headPtr = NULL;
-    (*ptrToListPtr)->tailPtr = NULL;
     return 0;
 }
 
-bool isListEmpty(List* listPtr)
+bool isListEmptyOrNull(List *listPtr)
 {
-    return listPtr->headPtr == NULL;
+    return listPtr == NULL || listPtr->headPtr == NULL;
 }
 
-bool isSingleNodeInList(List* listPtr)
+bool isSingleNodeInList(List *listPtr)
 {
-    return (listPtr->headPtr == listPtr->tailPtr);
+    return listPtr != NULL && listPtr->headPtr != NULL && listPtr->headPtr == listPtr->tailPtr;
 }
 
-int headOfList(List* listPtr, int* valuePtr)
+int headOfList(List *listPtr, int *valuePtr)
 {
-    if (listPtr == NULL || valuePtr == NULL)
+    if (listPtr == NULL || valuePtr == NULL || listPtr->headPtr == NULL)
     {
         return -1;
     }
@@ -44,29 +42,28 @@ int headOfList(List* listPtr, int* valuePtr)
     return 0;
 }
 
-int addToList(List* listPtr, int value)
+int addToList(List *listPtr, int value)
 {
     if (listPtr == NULL)
     {
         return -1;
     }
-    if (isListEmpty(listPtr))
+    if (listPtr->headPtr == NULL)
     {
         listPtr->headPtr = calloc(1, sizeof(Node));
         if (listPtr->headPtr == NULL)
         {
-            return -1;
+            return -2;
         }
         listPtr->headPtr->value = value;
         listPtr->headPtr->nextNodePtr = listPtr->headPtr;
         listPtr->tailPtr = listPtr->headPtr;
-    }
-    else
+    } else
     {
-        Node* newNodePtr = calloc(1, sizeof(Node));
+        Node *newNodePtr = calloc(1, sizeof(Node));
         if (newNodePtr == NULL)
         {
-            return -1;
+            return -2;
         }
         newNodePtr->value = value;
         listPtr->tailPtr->nextNodePtr = newNodePtr;
@@ -76,14 +73,14 @@ int addToList(List* listPtr, int value)
     return 0;
 }
 
-int deleteValueInList(List* listPtr, int position)
+int deleteValueFromList(List *listPtr, int position)
 {
     if (listPtr == NULL || position < 1)
     {
         return -1;
     }
-    Node* currentNodePtr = listPtr->headPtr;
-    Node* previousNodePtr = listPtr->tailPtr;
+    Node *currentNodePtr = listPtr->headPtr;
+    Node *previousNodePtr = listPtr->tailPtr;
     for (int i = 1; i < position; i++)
     {
         previousNodePtr = currentNodePtr;
@@ -96,23 +93,24 @@ int deleteValueInList(List* listPtr, int position)
     return 0;
 }
 
-void freeList(List* listPtr)
+void freeList(List *listPtr)
 {
     while (listPtr->headPtr != listPtr->tailPtr)
     {
-        deleteValueInList(listPtr, 0);
+        deleteValueFromList(listPtr, 0);
     }
     free(listPtr->headPtr);
     free(listPtr);
 }
 
-void printList(List* listPtr)
+void printList(List *listPtr)
 {
     if (listPtr == NULL)
     {
         return;
     }
-    Node* currentNodePtr = listPtr->headPtr;
+    Node *currentNodePtr = listPtr->headPtr;
+    printf("{ ");
     while (1)
     {
         printf("%d ", currentNodePtr->value);
@@ -120,7 +118,5 @@ void printList(List* listPtr)
         if (currentNodePtr == listPtr->headPtr)
             break;
     }
-    printf("\n");
+    printf("}\n");
 }
-
-

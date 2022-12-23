@@ -1,29 +1,36 @@
 #pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdbool.h>
 
-typedef struct Node Node;
-
+// Структура циклический список (содержит указатели на элемент, который добавили первым, и на элемент, который добавили последним)
 typedef struct List List;
 
-int createList(List** ptrToListPtr);
+// Создать список
+// Ошибки: 0 - всё ок, -2 - ошибка выделения памяти под список
+int createList(List **ptrToListPtr);
 
-bool isListEmpty(List* listPtr);
+// Список пуст или нулевой указатель
+bool isListEmptyOrNull(List *listPtr);
 
-bool isSingleNodeInList(List* listPtr);
+// Список не нулевой указатель, не пуст и в нём ровно один элемент
+bool isSingleNodeInList(List *listPtr);
 
-int headOfList(List* listPtr, int* valuePtr);
+// Кладёт значение первого элемента списка по данному адресу
+// Ошибки: 0 - всё ок, -1 - даны нулевые указатели или список пуст
+int headOfList(List *listPtr, int *valuePtr);
 
-int addToList(List* listPtr, int value);
+// Добавить значение в список
+// Ошибки: 0 - всё ок, -1 - дан нулевой указатель на список, -2 - ошибка выделения памяти для нового элемента
+int addToList(List *listPtr, int value);
 
-int deleteValueInList(List* listPtr, int position);
+// Удалить значение на определенной позиции из списка
+int deleteValueFromList(List *listPtr, int position);
 
-void freeList(List* listPtr);
+// Удалить список
+void freeList(List *listPtr);
 
-void printList(List* listPtr);
-
-
-
-
+// Распечатать список
+void printList(List *listPtr);
